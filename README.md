@@ -61,6 +61,15 @@ a 10-minute cron, and a lighter footprint is less likely to get the runner block
 Note that automated querying is in tension with Disney's terms of service; keep the
 interval conservative.
 
+## Actions minutes
+
+Most of each run is installing Chromium, so `check.yml` caches the browser under
+`~/.cache/ms-playwright`, keyed on the resolved Playwright version. A cache hit
+skips the download and only reinstalls the apt-level libraries it links against.
+That takes a run from roughly three minutes to well under one — which matters on
+a private repo, where hourly checks would otherwise exceed the 2,000-minute free
+tier.
+
 ## Running locally
 
 ```bash

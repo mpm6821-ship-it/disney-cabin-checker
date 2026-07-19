@@ -30,10 +30,32 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Resolve Playwright version
+        # Cache key must track the Playwright version -- browser builds are
+        # version-specific, and a stale cache would fail at launch.
+        id: pw
+        run: |
+          VERSION=$(pip show playwright | awk '/^Version:/ {print $2}')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Chromium
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
       - name: Install Chromium
         # The full Chromium build, not headless-shell: Disney's edge rejects
         # headless-shell with ERR_HTTP2_PROTOCOL_ERROR.
+        if: steps.pw-cache.outputs.cache-hit != 'true'
         run: python -m playwright install --with-deps chromium
+
+      - name: Install system libs (cache hit)
+        # The browser binary is cached; the apt-level libraries it links
+        # against are not, so they still need to be present.
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: python -m playwright install-deps chromium
 
       - name: Run availability checker
         env:
