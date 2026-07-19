@@ -66,6 +66,7 @@ def check_availability():
         data = response.json()
 
         print(f"[{now()}] API response received. Scanning {len(data)} date entries.")
+        print(f"[{now()}] Raw response: {json.dumps(data, indent=2)}")
 
         available_dates = []
         for item in data:
