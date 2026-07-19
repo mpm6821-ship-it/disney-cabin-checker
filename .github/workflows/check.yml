@@ -1,0 +1,32 @@
+name: Disney Cabin Availability Checker
+
+on:
+  schedule:
+    # Runs every 10 minutes, 24/7
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+    # Also lets you trigger it manually from the GitHub website
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run availability checker
+        env:
+          PUSHOVER_USER_KEY:  ${{ secrets.PUSHOVER_USER_KEY }}
+          PUSHOVER_API_TOKEN: ${{ secrets.PUSHOVER_API_TOKEN }}
+          CHECK_IN_DATE:      ${{ secrets.CHECK_IN_DATE }}
+          CHECK_OUT_DATE:     ${{ secrets.CHECK_OUT_DATE }}
+        run: python checker.py
