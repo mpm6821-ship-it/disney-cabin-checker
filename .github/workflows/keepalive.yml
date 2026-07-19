@@ -1,0 +1,29 @@
+name: Keepalive
+
+# GitHub disables scheduled workflows after 60 days with no *commit* activity.
+# A set-and-forget checker never commits, so it would silently switch itself
+# off well before the dates being watched arrive. This makes a trivial commit
+# once a month to reset that timer.
+
+on:
+  schedule:
+    - cron: '0 5 1 * *'   # 05:00 UTC on the 1st of each month
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Touch heartbeat and commit
+        run: |
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > .github/last-keepalive
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/last-keepalive
+          git commit -m "chore: keepalive heartbeat [skip ci]" || exit 0
+          git push

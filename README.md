@@ -81,3 +81,12 @@ headless-shell with `ERR_HTTP2_PROTOCOL_ERROR`.
   Florida-resident offers during testing. This affects prices shown, not whether
   a room is available.
 - **One room type.** It watches the DVC Cabins only.
+
+## Keeping the schedule alive
+
+GitHub disables scheduled workflows after **60 days without commit activity**, and
+only commits reset that timer — not issues, releases, or workflow runs. A checker
+that just sits there watching a date months out will therefore switch itself off
+before the date arrives, with a single easily-missed email as warning.
+
+`.github/workflows/keepalive.yml` makes a trivial monthly commit to prevent this.
