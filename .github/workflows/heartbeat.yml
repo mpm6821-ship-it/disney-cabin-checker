@@ -1,0 +1,34 @@
+name: Heartbeat
+
+# Reports whether the checker actually ran. The checker's own alerts only fire
+# on failed runs; nothing else notices runs that never happened. A Sunday with
+# no heartbeat is itself the warning.
+
+on:
+  schedule:
+    - cron: '0 13 * * 0'   # Sundays 13:00 UTC (~9am ET)
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - run: pip install requests
+
+      - name: Report checker health
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
+          PUSHOVER_API_TOKEN: ${{ secrets.PUSHOVER_API_TOKEN }}
+        run: python heartbeat.py

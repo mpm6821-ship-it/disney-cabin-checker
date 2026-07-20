@@ -99,3 +99,24 @@ that just sits there watching a date months out will therefore switch itself off
 before the date arrives, with a single easily-missed email as warning.
 
 `.github/workflows/keepalive.yml` makes a trivial monthly commit to prevent this.
+
+## Weekly heartbeat
+
+`heartbeat.py` runs each Sunday and reports how many times the checker actually
+ran in the previous week.
+
+This exists because the checker's own alerts only fire on *failed* runs, and
+nothing notices runs that never happened — a disabled workflow, exhausted Actions
+minutes, GitHub dropping scheduled runs. In those cases the Actions tab looks calm
+and the phone stays quiet, which is indistinguishable from "checked, nothing
+available".
+
+| Situation | Alert |
+|---|---|
+| Healthy | "alive" — silent priority, no sound |
+| Some runs failing | normal priority |
+| Every run failing | high priority |
+| Runs being skipped | normal priority |
+| **No runs at all** | high priority — "you are NOT being watched" |
+
+A Sunday that passes with no heartbeat at all is itself the warning.
