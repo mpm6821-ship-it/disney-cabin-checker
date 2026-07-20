@@ -26,8 +26,11 @@ PUSHOVER_API_TOKEN = os.environ.get("PUSHOVER_API_TOKEN", "")
 WORKFLOW_FILE = "check.yml"
 WINDOW_DAYS = 7
 
-# Hourly checks -> ~168/week. Well under that means runs are being dropped.
-EXPECTED_MIN_RUNS = 100
+# Every 15 min -> ~672/week nominal. GitHub drops short-interval runs under
+# load, so this floor is deliberately loose; it flags a real collapse in
+# coverage, not ordinary scheduler jitter. Tune it once a full week of real
+# data exists.
+EXPECTED_MIN_RUNS = 400
 
 
 def fetch_runs():
@@ -126,7 +129,7 @@ def main():
         title, priority = "Cabin checker: runs being skipped", 0
         body = (
             f"Only {total} runs in the last {WINDOW_DAYS} days "
-            f"(hourly should be ~168).\n\n"
+            f"(every 15 min should be ~672).\n\n"
             "GitHub is dropping scheduled runs. Still working, just less often "
             "than you think."
         )

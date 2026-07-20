@@ -2,10 +2,11 @@ name: Disney Cabin Availability Checker
 
 on:
   schedule:
-    # Hourly. Disney inventory does not turn over fast enough to justify
-    # hammering it every 10 minutes, and a lighter footprint is less likely
-    # to get the runner blocked.
-    - cron: '0 * * * *'
+    # Every 15 minutes. A cancelled room stays open only until someone else
+    # claims it, and for scarce dates that window can be under an hour, so
+    # hourly risks missing openings entirely. Below 15 min the limit is
+    # GitHub's scheduler (it drops short-interval runs) rather than coverage.
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 # Never let a slow run overlap the next scheduled one.

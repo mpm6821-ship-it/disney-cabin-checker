@@ -56,10 +56,18 @@ Without them the checker still runs and logs its result; it just cannot notify.
 
 ## Schedule
 
-Hourly (`0 * * * *`). Disney's inventory does not turn over fast enough to justify
-a 10-minute cron, and a lighter footprint is less likely to get the runner blocked.
-Note that automated querying is in tension with Disney's terms of service; keep the
-interval conservative.
+Every 15 minutes (`*/15 * * * *`). A cancelled room stays open only until someone
+else grabs it, and for scarce dates that window can be under an hour -- hourly
+risked missing an opening outright. Below 15 minutes the limiting factor stops
+being coverage and becomes GitHub's scheduler, which deprioritizes and drops
+short-interval cron runs under load; treat "every 15 min" as a target, not a
+guarantee.
+
+The repo is public, so Actions minutes are free and not a constraint here. The
+real cost of going faster is Disney's bot detection (Akamai) -- automated
+querying is already in tension with their terms of service, and a tighter
+interval raises the odds of the runner getting blocked. This is a deliberate
+tradeoff, not a default worth nudging further without a reason.
 
 ## Actions minutes
 
