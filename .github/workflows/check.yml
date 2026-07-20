@@ -60,8 +60,8 @@ jobs:
       - name: Run availability checker
         env:
           # Dates are configuration, not secrets -- edit them here.
-          CHECK_IN_DATE: '2026-12-01'
-          CHECK_OUT_DATE: '2026-12-05'
+          CHECK_IN_DATE: '2026-10-22'
+          CHECK_OUT_DATE: '2026-10-25'
           ADULTS: '2'
           PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
           PUSHOVER_API_TOKEN: ${{ secrets.PUSHOVER_API_TOKEN }}
