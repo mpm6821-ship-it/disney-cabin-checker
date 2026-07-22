@@ -69,6 +69,44 @@ querying is already in tension with their terms of service, and a tighter
 interval raises the odds of the runner getting blocked. This is a deliberate
 tradeoff, not a default worth nudging further without a reason.
 
+### Real scheduling
+
+`schedule:` alone did **not** deliver 15-minute cadence. Measured against real
+run timestamps, gaps between runs were 200-660 minutes -- hours apart, not
+minutes. GitHub's own cron trigger has no SLA and is documented to deprioritize
+and silently skip triggers under load; in practice, for a repo requesting a
+15-minute interval, it dropped nearly all of them rather than merely delaying
+a few.
+
+That's not something a workflow-file change can fix -- it's GitHub's own
+scheduler infrastructure. The real fix is to stop depending on it: an external
+cron service calls the GitHub API directly to trigger the run on a real timer,
+via `workflow_dispatch` (which needs no inputs). `schedule:` is left in place
+as a free, zero-effort backup layer in case the external trigger's token
+expires or the service goes down -- whatever it manages to deliver is a bonus,
+not the primary mechanism anymore.
+
+**Setup** (done once, outside this repo):
+
+1. Generate a **fine-grained GitHub token** scoped to *only* this repository,
+   with **Actions: Read and write** and nothing else. Narrower than the token
+   used to `git push` -- this one only needs to start a workflow run, not
+   touch code.
+2. On a free external cron service (e.g. cron-job.org), create a job that
+   fires every 15 minutes and sends:
+   - **Method:** `POST`
+   - **URL:** `https://api.github.com/repos/mpm6821-ship-it/disney-cabin-checker/actions/workflows/check.yml/dispatches`
+   - **Headers:**
+     - `Accept: application/vnd.github+json`
+     - `Authorization: Bearer <the token from step 1>`
+     - `X-GitHub-Api-Version: 2022-11-28`
+   - **Body:** `{"ref": "main"}`
+
+   The token goes directly into that service's own header field, never
+   through this repo or into any chat.
+3. Confirm it worked: the Actions tab should show new `workflow_dispatch`
+   runs landing roughly 15 minutes apart, instead of hours.
+
 ## Actions minutes
 
 Most of each run is installing Chromium, so `check.yml` caches the browser under

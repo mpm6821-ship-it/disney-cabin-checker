@@ -2,11 +2,15 @@ name: Disney Cabin Availability Checker
 
 on:
   schedule:
-    # Every 15 minutes. A cancelled room stays open only until someone else
-    # claims it, and for scarce dates that window can be under an hour, so
-    # hourly risks missing openings entirely. Below 15 min the limit is
-    # GitHub's scheduler (it drops short-interval runs) rather than coverage.
+    # Kept as a free backup layer. GitHub's own cron scheduler has no SLA and
+    # was observed silently dropping the vast majority of */15 triggers on
+    # this repo (runs landing hours apart, not 15 minutes) -- see README ->
+    # "Real scheduling". The real 15-minute cadence comes from an external
+    # cron service calling workflow_dispatch below via the GitHub API.
     - cron: '*/15 * * * *'
+  # Callable with no inputs, e.g. from an external cron service:
+  #   POST /repos/OWNER/REPO/actions/workflows/check.yml/dispatches
+  #   body: {"ref": "main"}
   workflow_dispatch:
 
 # Never let a slow run overlap the next scheduled one.
